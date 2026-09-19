@@ -35,7 +35,7 @@ export function signAppJwt(appId: string, privateKeyPem: string): string {
 
 	const now = Math.floor(Date.now() / 1000)
 	const header = { alg: 'RS256', typ: 'JWT' }
-	const payload = { iat: now - 60, exp: now + 8 * 60, iss: appId }
+	const payload = { iat: now - 60, exp: now + 8 * 60, iss: Number(appId) }
 
 	let prv
 	try {
