@@ -24,10 +24,26 @@ export function toBase64Utf8(input: string): string {
 }
 
 export function signAppJwt(appId: string, privateKeyPem: string): string {
+	// 清洗 PEM：去除 BOM、首尾空白、统一换行符
+	let cleanPem = privateKeyPem.replace(/^\uFEFF/, '').trim()
+	cleanPem = cleanPem.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+
+	// 校验是否为 PEM 格式的私钥
+	if (!/-----BEGIN [A-Z ]*PRIVATE KEY-----/.test(cleanPem)) {
+		throw new Error('私钥格式错误：PEM 文件应以 -----BEGIN PRIVATE KEY----- 或 -----BEGIN RSA PRIVATE KEY----- 开头')
+	}
+
 	const now = Math.floor(Date.now() / 1000)
 	const header = { alg: 'RS256', typ: 'JWT' }
 	const payload = { iat: now - 60, exp: now + 8 * 60, iss: appId }
-	const prv = KEYUTIL.getKey(privateKeyPem) as unknown as string
+
+	let prv
+	try {
+		prv = KEYUTIL.getKey(cleanPem) as unknown as string
+	} catch (e: any) {
+		throw new Error(`私钥解析失败：${e?.message || '不支持的密钥格式'}。请确认上传的是 GitHub App 生成的 RSA 私钥(.pem)文件。`)
+	}
+
 	return KJUR.jws.JWS.sign('RS256', JSON.stringify(header), JSON.stringify(payload), prv)
 }
 

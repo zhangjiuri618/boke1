@@ -101,6 +101,9 @@ export async function getAuthToken(): Promise<string> {
 	}
 
 	toast.info('正在签发 JWT...')
+	if (!GITHUB_CONFIG.APP_ID || GITHUB_CONFIG.APP_ID === '-') {
+		throw new Error('未配置 GitHub App ID。请在部署环境中设置 NEXT_PUBLIC_GITHUB_APP_ID 环境变量。')
+	}
 	const jwt = signAppJwt(GITHUB_CONFIG.APP_ID, privateKey)
 	// 签发完成，PEM 不再需要，立即从内存中清空，降低明文驻留时间
 	useAuthStore.setState({ privateKey: null })
