@@ -36,6 +36,7 @@ function clearTokenCache(): void {
 
 export async function getPemFromCache(): Promise<string | null> {
 	if (typeof sessionStorage === 'undefined') return null
+	if (!GITHUB_CONFIG.ENCRYPT_KEY) return null
 	try {
 		// 解密缓存中的 pem
 		const encryptedPem = sessionStorage.getItem(GITHUB_PEM_CACHE_KEY)
@@ -48,6 +49,11 @@ export async function getPemFromCache(): Promise<string | null> {
 
 export async function savePemToCache(pem: string): Promise<void> {
 	if (typeof sessionStorage === 'undefined') return
+	if (!GITHUB_CONFIG.ENCRYPT_KEY) {
+		console.warn('[auth] 未设置 NEXT_PUBLIC_GITHUB_ENCRYPT_KEY，拒绝缓存 PEM。请在部署时配置环境变量。')
+		toast.error('未配置加密密钥，PEM 不会被缓存')
+		return
+	}
 	try {
 		// 加密 pem 后存储
 		const encryptedPem = await encrypt(pem, GITHUB_CONFIG.ENCRYPT_KEY)
@@ -96,6 +102,8 @@ export async function getAuthToken(): Promise<string> {
 
 	toast.info('正在签发 JWT...')
 	const jwt = signAppJwt(GITHUB_CONFIG.APP_ID, privateKey)
+	// 签发完成，PEM 不再需要，立即从内存中清空，降低明文驻留时间
+	useAuthStore.setState({ privateKey: null })
 
 	toast.info('正在获取安装信息...')
 	const installationId = await getInstallationId(jwt, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO)

@@ -20,7 +20,7 @@ interface ConfigDialogProps {
 type TabType = 'site' | 'color' | 'layout'
 
 export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
-	const { isAuth, setPrivateKey } = useAuthStore()
+	const { isAuth, setPrivateKey, clearAuth } = useAuthStore()
 	const { siteContent, setSiteContent, cardStyles, setCardStyles, regenerateBubbles } = useConfigStore()
 	const [formData, setFormData] = useState<SiteContent>(siteContent)
 	const [cardStylesData, setCardStylesData] = useState<CardStyles>(cardStyles)
@@ -88,6 +88,11 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 			console.error('Failed to read private key:', error)
 			toast.error('读取密钥文件失败')
 		}
+	}
+
+	const handleClearPrivateKey = () => {
+		clearAuth()
+		toast.success('已清除私钥与缓存的令牌')
 	}
 
 	const handleSaveClick = () => {
@@ -264,6 +269,16 @@ export default function ConfigDialog({ open, onClose }: ConfigDialogProps) {
 							className='bg-card rounded-xl border px-6 py-2 text-sm'>
 							预览
 						</motion.button>
+						{isAuth && (
+							<motion.button
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								onClick={handleClearPrivateKey}
+								disabled={isSaving}
+								className='bg-card rounded-xl border px-4 py-2 text-sm text-secondary hover:text-red-500'>
+								清除私钥
+							</motion.button>
+						)}
 						<motion.button
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
