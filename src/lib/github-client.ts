@@ -31,6 +31,17 @@ export function signAppJwt(appId: string, privateKeyPem: string): string {
 	return KJUR.jws.JWS.sign('RS256', JSON.stringify(header), JSON.stringify(payload), prv)
 }
 
+async function parseErrorMessage(res: Response, fallback: string): Promise<string> {
+	try {
+		const data = await res.json()
+		if (data?.message) return typeof data.message === 'string' ? data.message : JSON.stringify(data.message)
+		if (data?.errors?.[0]?.message) return data.errors[0].message
+	} catch {
+		// response body is not JSON
+	}
+	return `${fallback}: ${res.status}`
+}
+
 export async function getInstallationId(jwt: string, owner: string, repo: string): Promise<number> {
 	const res = await fetch(`${GH_API}/repos/${owner}/${repo}/installation`, {
 		headers: {
@@ -41,7 +52,7 @@ export async function getInstallationId(jwt: string, owner: string, repo: string
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`installation lookup failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'installation lookup failed'))
 	const data = await res.json()
 	return data.id
 }
@@ -57,7 +68,7 @@ export async function createInstallationToken(jwt: string, installationId: numbe
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`create token failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'create token failed'))
 	const data = await res.json()
 	return data.token as string
 }
@@ -73,7 +84,7 @@ export async function getFileSha(token: string, owner: string, repo: string, pat
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
 	if (res.status === 404) return undefined
-	if (!res.ok) throw new Error(`get file sha failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'get file sha failed'))
 	const data = await res.json()
 	return (data && data.sha) || undefined
 }
@@ -92,7 +103,7 @@ export async function putFile(token: string, owner: string, repo: string, path: 
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`put file failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'put file failed'))
 	return res.json()
 }
 
@@ -108,7 +119,7 @@ export async function getRef(token: string, owner: string, repo: string, ref: st
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`get ref failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'get ref failed'))
 	const data = await res.json()
 	return { sha: data.object.sha }
 }
@@ -134,7 +145,7 @@ export async function createTree(token: string, owner: string, repo: string, tre
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`create tree failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'create tree failed'))
 	const data = await res.json()
 	return { sha: data.sha }
 }
@@ -152,7 +163,7 @@ export async function createCommit(token: string, owner: string, repo: string, m
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`create commit failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'create commit failed'))
 	const data = await res.json()
 	return { sha: data.sha }
 }
@@ -170,7 +181,7 @@ export async function updateRef(token: string, owner: string, repo: string, ref:
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`update ref failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'update ref failed'))
 }
 
 export async function readTextFileFromRepo(token: string, owner: string, repo: string, path: string, ref: string): Promise<string | null> {
@@ -184,7 +195,7 @@ export async function readTextFileFromRepo(token: string, owner: string, repo: s
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
 	if (res.status === 404) return null
-	if (!res.ok) throw new Error(`read file failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'read file failed'))
 	const data: any = await res.json()
 	if (Array.isArray(data) || !data.content) return null
 	try {
@@ -206,7 +217,7 @@ export async function listRepoFilesRecursive(token: string, owner: string, repo:
 		if (res.status === 401) handle401Error()
 		if (res.status === 422) handle422Error()
 		if (res.status === 404) return []
-		if (!res.ok) throw new Error(`read directory failed: ${res.status}`)
+		if (!res.ok) throw new Error(await parseErrorMessage(res, 'read directory failed'))
 		const data: any = await res.json()
 		if (Array.isArray(data)) {
 			const files: string[] = []
@@ -247,7 +258,7 @@ export async function createBlob(
 	})
 	if (res.status === 401) handle401Error()
 	if (res.status === 422) handle422Error()
-	if (!res.ok) throw new Error(`create blob failed: ${res.status}`)
+	if (!res.ok) throw new Error(await parseErrorMessage(res, 'create blob failed'))
 	const data = await res.json()
 	return { sha: data.sha }
 }
