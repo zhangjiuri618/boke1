@@ -8,11 +8,15 @@ import { CARD_SPACING } from '@/consts'
 import MusicSVG from '@/svgs/music.svg'
 import PlaySVG from '@/svgs/play.svg'
 import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
-import { Pause } from 'lucide-react'
+import { Pause, SkipBack, SkipForward } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
-const MUSIC_FILES = ['/music/close-to-you.mp3']
+// 歌曲列表：如需新增歌曲，把文件放到 public/music/ 后在此添加一行即可
+const MUSIC_FILES = [
+	{ name: 'Close To You', src: '/music/close-to-you.mp3' },
+	{ name: 'Christmas', src: '/music/christmas.m4a' }
+]
 
 export default function MusicCard() {
 	const pathname = usePathname()
@@ -95,7 +99,7 @@ export default function MusicCard() {
 		if (audioRef.current) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
-			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.src = MUSIC_FILES[currentIndex].src
 			audioRef.current.loop = false
 			setProgress(0)
 
@@ -130,6 +134,14 @@ export default function MusicCard() {
 		setIsPlaying(!isPlaying)
 	}
 
+	const playNext = () => {
+		setCurrentIndex((currentIndex + 1) % MUSIC_FILES.length)
+	}
+
+	const playPrev = () => {
+		setCurrentIndex((currentIndex - 1 + MUSIC_FILES.length) % MUSIC_FILES.length)
+	}
+
 	// Hide component if not on home page and not playing
 	if (!isHomePage && !isPlaying) {
 		return null
@@ -158,15 +170,23 @@ export default function MusicCard() {
 				<MusicSVG className='h-8 w-8' />
 
 				<div className='flex-1'>
-					<div className='text-secondary text-sm'>Close To You</div>
+					<div className='text-secondary truncate text-sm'>{MUSIC_FILES[currentIndex].name}</div>
 
 					<div className='mt-1 h-2 rounded-full bg-white/60'>
 						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
 					</div>
 				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
+				<button onClick={playPrev} className='flex h-8 w-8 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80' aria-label='上一首'>
+					<SkipBack className='text-brand h-3.5 w-3.5' />
+				</button>
+
+				<button onClick={togglePlayPause} className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80' aria-label={isPlaying ? '暂停' : '播放'}>
 					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
+				</button>
+
+				<button onClick={playNext} className='flex h-8 w-8 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80' aria-label='下一首'>
+					<SkipForward className='text-brand h-3.5 w-3.5' />
 				</button>
 			</Card>
 		</HomeDraggableLayer>
