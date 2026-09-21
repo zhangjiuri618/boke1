@@ -14,7 +14,7 @@ import clsx from 'clsx'
 
 // 歌曲列表：如需新增歌曲，把文件放到 public/music/ 后在此添加一行即可
 const MUSIC_FILES = [
-	{ name: 'Close To You', src: '/music/close-to-you.mp3' },
+	{ name: '最好的安排', src: '/music/close-to-you.mp3' },
 	{ name: 'Christmas', src: '/music/christmas.m4a' },
 	{ name: '我怀念的 - 孙燕姿', src: '/music/wo-huai-nian-de.mp3' },
 	{ name: '慢慢喜欢你 - 莫文蔚', src: '/music/man-man-xi-huan-ni.mp3' }
