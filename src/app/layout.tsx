@@ -10,16 +10,29 @@ const {
 	theme
 } = siteContent
 
+const SITE_URL = process.env.SITE_URL || 'https://www.yysuni.com'
+
 export const metadata: Metadata = {
+	metadataBase: new URL(SITE_URL),
 	title,
 	description,
 	openGraph: {
 		title,
-		description
+		description,
+		url: SITE_URL,
+		siteName: title,
+		locale: 'zh_CN',
+		type: 'website'
 	},
 	twitter: {
 		title,
-		description
+		description,
+		card: 'summary_large_image'
+	},
+	alternates: {
+		types: {
+			'application/rss+xml': `${SITE_URL}/rss.xml`
+		}
 	}
 }
 
@@ -37,7 +50,7 @@ const htmlStyle = {
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 	return (
-		<html lang='en' suppressHydrationWarning style={htmlStyle}>
+		<html lang='zh-CN' suppressHydrationWarning style={htmlStyle}>
 			<Head />
 
 			<body>
