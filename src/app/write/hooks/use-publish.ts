@@ -5,9 +5,17 @@ import { pushBlog } from '../services/push-blog'
 import { deleteBlog } from '../services/delete-blog'
 import { useWriteStore } from '../stores/write-store'
 import { useAuthStore } from '@/hooks/use-auth'
+import { slugify } from '@/lib/markdown-renderer'
+
+function generateSlug(title: string): string {
+	const fromTitle = slugify(title || '')
+	if (fromTitle) return fromTitle
+	// 标题无法生成有效 slug 时，使用时间戳兜底
+	return `post-${Date.now().toString(36)}`
+}
 
 export function usePublish() {
-	const { loading, setLoading, form, cover, images, mode, originalSlug } = useWriteStore()
+	const { loading, setLoading, form, cover, images, mode, originalSlug, updateForm } = useWriteStore()
 	const { isAuth, setPrivateKey } = useAuthStore()
 
 	const onChoosePrivateKey = useCallback(
@@ -19,10 +27,19 @@ export function usePublish() {
 	)
 
 	const onPublish = useCallback(async () => {
+		// 如果 slug 为空，自动从标题生成
+		let targetForm = form
+		if (!form.slug?.trim()) {
+			const generated = generateSlug(form.title)
+			updateForm({ slug: generated })
+			targetForm = { ...form, slug: generated }
+			toast.info(`已自动生成 slug: ${generated}`)
+		}
+
 		try {
 			setLoading(true)
 			await pushBlog({
-				form,
+				form: targetForm,
 				cover,
 				images,
 				mode,
@@ -37,7 +54,7 @@ export function usePublish() {
 		} finally {
 			setLoading(false)
 		}
-	}, [form, cover, images, mode, originalSlug, setLoading])
+	}, [form, cover, images, mode, originalSlug, setLoading, updateForm])
 
 	const onDelete = useCallback(async () => {
 		const targetSlug = originalSlug || form.slug

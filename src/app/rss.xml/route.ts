@@ -2,7 +2,6 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import siteContent from '@/config/site-content.json'
-import blogIndex from '@/../public/blogs/index.json'
 import type { BlogIndexItem } from '@/app/blog/types'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.yysuni.com'
@@ -11,7 +10,14 @@ const SITE_ORIGIN = SITE_URL.replace(/\/$/, '')
 const FEED_URL = `${SITE_ORIGIN}${FEED_PATH}`
 const PUBLIC_DIR = path.join(process.cwd(), 'public')
 
-const blogs = blogIndex as BlogIndexItem[]
+const blogs: BlogIndexItem[] = (() => {
+	try {
+		const raw = fs.readFileSync(path.join(PUBLIC_DIR, 'blogs', 'index.json'), 'utf-8').replace(/^\uFEFF/, '')
+		return JSON.parse(raw) as BlogIndexItem[]
+	} catch {
+		return []
+	}
+})()
 
 const escapeXml = (value: string): string =>
 	value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;')

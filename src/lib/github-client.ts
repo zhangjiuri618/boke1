@@ -215,9 +215,9 @@ export async function readTextFileFromRepo(token: string, owner: string, repo: s
 	const data: any = await res.json()
 	if (Array.isArray(data) || !data.content) return null
 	try {
-		return decodeURIComponent(escape(atob(data.content)))
+		return decodeURIComponent(escape(atob(data.content))).replace(/^\uFEFF/, '')
 	} catch {
-		return atob(data.content)
+		return atob(data.content).replace(/^\uFEFF/, '')
 	}
 }
 

@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
-import blogIndex from '@/../public/blogs/index.json'
+import fs from 'node:fs'
+import path from 'node:path'
 import type { BlogIndexItem } from '@/app/blog/types'
 
 export const dynamic = 'force-static'
@@ -13,7 +14,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
 	console.log(`[Sitemap] Generating for: ${baseUrl}`)
 
-	let posts: BlogIndexItem[] = blogIndex
+	let posts: BlogIndexItem[] = []
+	try {
+		const raw = fs.readFileSync(path.join(process.cwd(), 'public', 'blogs', 'index.json'), 'utf-8').replace(/^\uFEFF/, '')
+		posts = JSON.parse(raw)
+	} catch {
+		posts = []
+	}
 
 	const postEntries: MetadataRoute.Sitemap = posts.map(post => ({
 		url: `${baseUrl}/blog/${post.slug}`,
