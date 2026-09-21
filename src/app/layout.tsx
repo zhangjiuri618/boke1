@@ -10,7 +10,7 @@ const {
 	theme
 } = siteContent
 
-const SITE_URL = process.env.SITE_URL || 'https://www.yysuni.com'
+const SITE_URL = process.env.SITE_URL || 'https://zhangjiuri.site'
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE_URL),

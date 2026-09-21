@@ -4,7 +4,7 @@ import path from 'node:path'
 import siteContent from '@/config/site-content.json'
 import type { BlogIndexItem } from '@/app/blog/types'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.yysuni.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://zhangjiuri.site'
 const FEED_PATH = '/rss.xml'
 const SITE_ORIGIN = SITE_URL.replace(/\/$/, '')
 const FEED_URL = `${SITE_ORIGIN}${FEED_PATH}`
