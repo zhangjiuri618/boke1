@@ -16,7 +16,8 @@ import clsx from 'clsx'
 const MUSIC_FILES = [
 	{ name: 'Close To You', src: '/music/close-to-you.mp3' },
 	{ name: 'Christmas', src: '/music/christmas.m4a' },
-	{ name: '我怀念的 - 孙燕姿', src: '/music/wo-huai-nian-de.mp3' }
+	{ name: '我怀念的 - 孙燕姿', src: '/music/wo-huai-nian-de.mp3' },
+	{ name: '慢慢喜欢你 - 莫文蔚', src: '/music/man-man-xi-huan-ni.mp3' }
 ]
 
 export default function MusicCard() {
